@@ -50,3 +50,4 @@ apt install python3-pygame
 
 ## Nota bene
 This video show some really interesting patterns: https://www.youtube.com/watch?v=C2vgICfQawE
+And not to forget the man himself, John Conway who created the algorithm, about The game of Life: https://www.youtube.com/watch?v=R9Plq-D1gEk

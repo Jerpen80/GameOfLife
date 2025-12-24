@@ -2,9 +2,9 @@ import pygame
 import sys
 import random
 
-editing = True  
+editing = True
 
-cell_size = 8      
+cell_size = 8    
 grid_width = 200
 grid_height = 200
 
@@ -29,8 +29,6 @@ def populate_grid_random(grid, density):
         for x in range(len(grid[0])):
             if random.random() < density:
                 grid[y][x] = 1
-
-# TODO: Allow user to determine startinmg position
 
 def count_live_neighbor_cells(grid, x, y):
     count = 0
@@ -69,7 +67,10 @@ def step(grid):
 
 
 grid = make_grid(grid_width, grid_height)
-# populate_grid_random(grid, density)
+
+if editing == False:
+    populate_grid_random(grid, density)
+
 pygame.init()
 
 window_width = grid_width * cell_size

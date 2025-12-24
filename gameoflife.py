@@ -7,8 +7,6 @@ alive_color = (255, 255, 255)  # white
 dead_color = (0, 0, 0)         # black
 grid_color = (40, 40, 40)      # grey grid during editing
 
-clock = pygame.time.Clock()
-
 # 2D grid 
 def make_grid(width, height):
     return [[0 for x in range(width)] for y in range(height)]
@@ -56,7 +54,8 @@ def step(grid, grid_width, grid_height):
     return new_grid
 
 def main(grid_width, grid_height, cell_size, fps, editing, density):
-
+    
+    clock = pygame.time.Clock()
     grid = make_grid(grid_width, grid_height)
 
     if not editing and density is not None:

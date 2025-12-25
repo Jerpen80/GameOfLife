@@ -53,12 +53,12 @@ def step(grid, grid_width, grid_height):
 
     return new_grid
 
-def main(grid_width, grid_height, cell_size, fps, editing, density):
+def main(grid_width, grid_height, cell_size, fps, mode, density):
     
     clock = pygame.time.Clock()
     grid = make_grid(grid_width, grid_height)
 
-    if not editing and density is not None:
+    if mode == "RUN" and density is not None:
         populate_grid_random(grid, density)
 
     pygame.init()
@@ -76,49 +76,57 @@ def main(grid_width, grid_height, cell_size, fps, editing, density):
             if event.type == pygame.QUIT:
                 running = False
 
-            if editing:
-                if event.type == pygame.MOUSEBUTTONDOWN: # Mouse button to toggle cells in editing phase
-                    mouse_x, mouse_y = event.pos
+            # keyboard controls (always)
+            if event.type == pygame.KEYDOWN:
 
-                    x = mouse_x // cell_size
-                    y = mouse_y // cell_size
+                if event.key == pygame.K_SPACE:
+                    if mode == "EDIT":
+                        mode = "RUN"
+                    elif mode == "RUN":
+                        mode = "PAUSE"
+                    elif mode == "PAUSE":
+                        mode = "RUN"
 
-                    if 0 <= x < grid_width and 0 <= y < grid_height:
-                        grid[y][x] = 0 if grid[y][x] == 1 else 1
+                elif event.key == pygame.K_n:
+                    if mode == "EDIT":
+                        mode = "PAUSE"
+                        grid = step(grid, grid_width, grid_height)
+                    elif mode == "PAUSE":
+                        grid = step(grid, grid_width, grid_height)
 
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_SPACE:
-                        editing = False
+            # mouse controls (EDIT only)
+            if mode == "EDIT" and event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_x, mouse_y = event.pos
+                x = mouse_x // cell_size
+                y = mouse_y // cell_size
 
-        if not editing:
+                if 0 <= x < grid_width and 0 <= y < grid_height:
+                    grid[y][x] = 0 if grid[y][x] == 1 else 1
+
+        # update simulation once per frame (RUN only)
+        if mode == "RUN":
             grid = step(grid, grid_width, grid_height)
 
+        # render
         screen.fill(dead_color)
-        
-        if editing: # Draw grid while editing
-            # vertical lines
+
+        if mode == "EDIT":
             for x in range(0, window_width, cell_size):
                 pygame.draw.line(screen, grid_color, (x, 0), (x, window_height))
-
-            # horizontal lines
             for y in range(0, window_height, cell_size):
                 pygame.draw.line(screen, grid_color, (0, y), (window_width, y))
 
-        # draw grid
         for y in range(grid_height):
             for x in range(grid_width):
                 if grid[y][x] == 1:
-                    rect = pygame.Rect(
-                        x * cell_size,
-                        y * cell_size,
-                        cell_size,
-                        cell_size
+                    pygame.draw.rect(
+                        screen,
+                        alive_color,
+                        (x * cell_size, y * cell_size, cell_size, cell_size)
                     )
-                    pygame.draw.rect(screen, alive_color, rect)
 
         pygame.display.flip()
         clock.tick(fps)
-
 
     pygame.quit()
     sys.exit()
@@ -143,10 +151,10 @@ if __name__ == '__main__':
 
     # determine starting mode
     if args.random is None:
-        editing = True
+        mode = "EDIT"
         density = None
     else:
-        editing = False
+        mode = "RUN"
         density = args.random
 
     main(
@@ -154,6 +162,6 @@ if __name__ == '__main__':
         grid_height=args.height,
         cell_size=args.cellsize,
         fps=args.speed,
-        editing=editing,
+        mode=mode,
         density=density
     )

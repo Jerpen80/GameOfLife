@@ -121,9 +121,8 @@ def main(grid_width, grid_height, cell_size, fps, mode, density):
                 max_offset_x = grid_width * cell_size - window_width
                 max_offset_y = grid_height * cell_size - window_height
 
-                # Prevent camera from scrolling past the left or right edge of the grid
+                # Prevent camera from scrolling past edge of the grid
                 offset_x = max(0, min(max_offset_x, offset_x))
-                # Same for up and down
                 offset_y = max(0, min(max_offset_y, offset_y))
 
             # Mouse controls (EDIT only)
@@ -156,7 +155,7 @@ def main(grid_width, grid_height, cell_size, fps, mode, density):
                         screen,
                         alive_color,
                         (
-                            # prevent mouse offset by adding offset caused by scrolling with arrow keys
+                            # prevent mouse offset caused by scrolling with arrow keys
                             x * cell_size - offset_x,
                             y * cell_size - offset_y,
                             cell_size,

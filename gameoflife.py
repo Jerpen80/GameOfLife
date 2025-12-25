@@ -126,7 +126,10 @@ def main(grid_width, grid_height, cell_size, fps, mode, density):
                     )
 
         pygame.display.flip()
-        clock.tick(fps)
+        if mode == "RUN":
+            clock.tick(fps)
+        else:
+            clock.tick(60)
 
     pygame.quit()
     sys.exit()

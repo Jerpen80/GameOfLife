@@ -21,16 +21,26 @@ def populate_grid_random(grid, density):
 # Count neighbouring alive cells
 def count_live_neighbor_cells(grid, x, y, grid_width, grid_height):
     count = 0
-    # delta (changing) x and y
+    
+    # Count how many of its 8 surrounding neighbors are alive where (0,0) is the cell itself:
+    # (-1,-1) (0,-1) (1,-1)
+    # (-1, 0) (0, 0) (1, 0)
+    # (-1, 1) (0, 1) (1, 1)
+
     for dy in (-1, 0, 1):
         for dx in (-1, 0, 1):
+
+            # skip the cell itself
             if dx == 0 and dy == 0:
-                continue  # skip the cell itself
-            # neighbors
+                continue
+
+            # convert relative offsets into absolute grid positions
             nx = x + dx
             ny = y + dy
 
+            # prevent accessing invalid positions (beyond grid edges)
             if 0 <= nx < grid_width and 0 <= ny < grid_height:
+                # Add all alive neighbours (dead = 0, alive = 1)
                 count += grid[ny][nx]
 
     return count

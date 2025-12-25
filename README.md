@@ -1,7 +1,8 @@
-#  Game of Life (pygame learning project)
+# Game of Life (pygame learning project)
 
-A simple implementation of **Conway’s Game of Life** written in Python using **pygame**.
-Inspired by this amazing video where people have built entire computers with this logic: https://www.youtube.com/watch?v=Kk2MH9O4pXY
+A simple implementation of **Conway’s Game of Life** written in Python using **pygame**.  
+Inspired by this amazing video where people have built entire computers with this logic:  
+https://www.youtube.com/watch?v=Kk2MH9O4pXY
 
 This project is a **learning exercise** focused on understanding pygame fundamentals such as the game loop, timing, rendering a grid, and separating simulation logic from display code.  
 It is intentionally kept simple and readable while exploring how a cellular automaton behaves in real time.
@@ -17,10 +18,11 @@ When started without the `--random` flag, the program opens in **editing mode**:
 - Click on cells to toggle them alive or dead
 - Grid lines are shown to make placement easier
 - Press **SPACE** to start the simulation
+- Press **N** to advance **one generation** and enter pause mode
 
 ### Random start
 
-If the `--random` flag is provided, the grid is filled randomly withe the given density (a float between 0 and 1) and the simulation starts immediately:
+If the `--random` flag is provided, the grid is filled randomly with the given density (a float between 0 and 1) and the simulation starts immediately:
 
 ```bash
 python3 gameoflife.py --random 0.15

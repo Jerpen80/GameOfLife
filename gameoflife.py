@@ -18,6 +18,7 @@ def populate_grid_random(grid, density):
             if random.random() < density:
                 grid[y][x] = 1
 
+# Count neighbouring alive cells
 def count_live_neighbor_cells(grid, x, y, grid_width, grid_height):
     count = 0
     # delta (changing) x and y

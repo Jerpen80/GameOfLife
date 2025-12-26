@@ -7,7 +7,7 @@ alive_color = (255, 255, 255)  # white
 dead_color = (0, 0, 0)         # black
 grid_color = (40, 40, 40)      # grey grid during editing
 
-# 2D grid 
+# 2D grid of zeroes
 def make_grid(width, height):
     return [[0 for x in range(width)] for y in range(height)]
 
@@ -45,24 +45,69 @@ def count_live_neighbor_cells(grid, x, y, grid_width, grid_height):
 
     return count
 
+# detect if chunks contain live cells, or we can skip them
+def active_chunks_from_grid(grid, grid_width, grid_height, chunk_size):
+    active = set()
+    for y in range(grid_height):
+        row = grid[y]
+        for x in range(grid_width):
+            if row[x] == 1:
+                active.add((x // chunk_size, y // chunk_size))
+    return active
+
+def expand_active_chunks(active):
+    # active: set of (chunk_x, chunk_y)
+    expanded = set()
+    for chunk_x, chunk_y in active:
+        for offset_x in (-1, 0, 1):
+            for offset_y in (-1, 0, 1):
+                expanded.add((chunk_x + offset_x, chunk_y + offset_y))
+    return expanded
+
+
+def iterate_chunk_cells(chunk_x, chunk_y, chunk_size, grid_width, grid_height):
+    x0 = chunk_x * chunk_size
+    y0 = chunk_y * chunk_size
+
+    # keep within grid bounds (also handles negative chunk coords safely)
+    x_start = max(0, x0)
+    y_start = max(0, y0)
+    x_end = min(grid_width,  x0 + chunk_size)
+    y_end = min(grid_height, y0 + chunk_size)
+
+    # if chunk is outside grid, yield nothing
+    if x_start >= x_end or y_start >= y_end:
+        return
+
+    for y in range(y_start, y_end):
+        for x in range(x_start, x_end):
+            # return one coordinate at a time
+            yield x, y
+
 # Apply the game of life logic:
-def step(grid, grid_width, grid_height):
+def step(grid, grid_width, grid_height, active, chunk_size):
     new_grid = make_grid(grid_width, grid_height)
 
-    for y in range(grid_height):
-        for x in range(grid_width):
+    # evaluate also neighbors of active chunks
+    expanded = expand_active_chunks(active)
+
+    # 2) Evaluate only those cells
+    for chunk_x, chunk_y in expanded:
+        for x, y in iterate_chunk_cells(chunk_x, chunk_y, chunk_size, grid_width, grid_height):
+
             neighbors = count_live_neighbor_cells(grid, x, y, grid_width, grid_height)
 
             if grid[y][x] == 1:
-                # survival
-                if neighbors == 2 or neighbors == 3:
+                if neighbors in (2, 3):
                     new_grid[y][x] = 1
             else:
-                # birth
                 if neighbors == 3:
                     new_grid[y][x] = 1
 
-    return new_grid
+    # 3) Rebuild active chunks for next frame (correct + simple)
+    new_active = active_chunks_from_grid(new_grid, grid_width, grid_height, chunk_size)
+    return new_grid, new_active
+
 
 def main(grid_width, grid_height, cell_size, fps, mode, density):
     
@@ -70,6 +115,8 @@ def main(grid_width, grid_height, cell_size, fps, mode, density):
     offset_y = 0
     # SCROLL_SPEED: ammount of pixels to shift with arrow key presses
     SCROLL_SPEED = 40
+
+    chunk_size = 32
 
     clock = pygame.time.Clock()
 
@@ -85,6 +132,9 @@ def main(grid_width, grid_height, cell_size, fps, mode, density):
 
     if density is not None:
         populate_grid_random(grid, density)
+
+    # create set of active chunks, chunks with alive cells
+    active = active_chunks_from_grid(grid, grid_width, grid_height, chunk_size)
 
     # Init pygame
     pygame.init()
@@ -124,9 +174,8 @@ def main(grid_width, grid_height, cell_size, fps, mode, density):
                 elif event.key == pygame.K_n:
                     if mode == "EDIT":
                         mode = "PAUSE"
-                        grid = step(grid, grid_width, grid_height)
-                    elif mode == "PAUSE":
-                        grid = step(grid, grid_width, grid_height)
+
+                    grid, active = step(grid, grid_width, grid_height, active, chunk_size)
 
                 max_offset_x = grid_width * cell_size - window_width
                 max_offset_y = grid_height * cell_size - window_height
@@ -145,9 +194,29 @@ def main(grid_width, grid_height, cell_size, fps, mode, density):
                 if 0 <= x < grid_width and 0 <= y < grid_height:
                     grid[y][x] = 0 if grid[y][x] == 1 else 1
 
+                    # Update active chunks
+                    cx = x // chunk_size
+                    cy = y // chunk_size
+
+                    if grid[y][x] == 1:
+                        active.add((cx, cy))
+                    else:
+                        # Optional cleanup: remove chunk if empty
+                        still_alive = False
+                        for yy in range(cy * chunk_size, min((cy + 1) * chunk_size, grid_height)):
+                            for xx in range(cx * chunk_size, min((cx + 1) * chunk_size, grid_width)):
+                                if grid[yy][xx] == 1:
+                                    still_alive = True
+                                    break
+                            if still_alive:
+                                break
+
+                        if not still_alive:
+                            active.discard((cx, cy))
+
         # Update simulation once per frame (RUN only)
         if mode == "RUN":
-            grid = step(grid, grid_width, grid_height)
+            grid, active = step(grid, grid_width, grid_height, active, chunk_size)
 
         # Render
         screen.fill(dead_color)

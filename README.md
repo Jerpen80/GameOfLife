@@ -4,8 +4,11 @@ A simple implementation of **Conway’s Game of Life** written in Python using *
 Inspired by this amazing video where people have built entire computers with this logic:  
 https://www.youtube.com/watch?v=Kk2MH9O4pXY
 
-This project is a **learning exercise** focused on understanding pygame fundamentals such as the game loop, timing, rendering a grid, and separating simulation logic from display code.  
-It is intentionally kept simple and readable while exploring how a cellular automaton behaves in real time.
+This project is a **learning exercise**, focused on understanding:
+- game loops  
+- rendering grids  
+- separating simulation logic from rendering  
+- basic performance optimizations using spatial partitioning (chunks)
 
 ---
 
@@ -68,47 +71,73 @@ python3 gameoflife.py --random 0.15
 
 ---
 
-### Mouse
+## Mouse
 
-- **Left click (Edit mode only)**  
-  Toggle a cell alive or dead at the cursor position
-
----
-
-## Display and layout
-
-- The application opens in a **borderless fullscreen window**
-- If the grid is larger than the visible area, you can **pan the camera** using the arrow keys
-- The simulation continues to run for cells outside the visible area (only the view is moved)
+### Left click (Edit mode only)
+- Toggle a cell **alive / dead**
 
 ---
 
-## Purpose
+## Display behavior
 
-The goal of this project is to **learn pygame by building a concrete, visual program**.
-
-Conway’s Game of Life is well suited for this because it:
-- Uses a discrete grid
-- Evolves over time using simple rules
-- Clearly demonstrates the need for a proper update loop
-- Separates simulation logic from rendering
-
-This repository reflects an incremental learning process rather than a polished or highly optimized implementation.
+- The application opens in **borderless fullscreen**
+- Grid size automatically adapts to the screen resolution
+- You can **pan the camera** using the arrow keys
+- The simulation continues running even when cells are outside the visible area
 
 ---
 
-## Features
+## Chunk-based optimization
 
-- Pygame-based window and render loop  
-- Manual editing of the starting grid  
-- Randomized starting state with configurable density  
-- Fullscreen display with camera panning  
-- Pause / resume and single-step execution  
-- Adjustable simulation speed  
-- Explicit and readable implementation of the Game of Life rules  
-- No external dependencies beyond pygame  
+To improve performance on large grids, the simulation uses **chunk-based evaluation**.
+
+### Concept
+
+- The grid is divided into square chunks (e.g. `32 × 32` cells)
+- Only chunks that contain **live cells** are processed
+- Neighboring chunks are also evaluated to handle edge interactions
+- After each step, active chunks are recalculated
+
+This significantly reduces unnecessary computation when most of the grid is empty.
 
 ---
+
+## Internal structure
+
+### Important functions
+
+| Function | Purpose |
+|--------|---------|
+| `make_grid()` | Create an empty grid |
+| `populate_grid_random()` | Fill grid with random live cells |
+| `count_live_neighbor_cells()` | Apply Conway’s rules |
+| `active_chunks_from_grid()` | Find which chunks contain live cells |
+| `expand_active_chunks()` | Include neighboring chunks |
+| `iterate_chunk_cells()` | Iterate safely over chunk cells |
+| `step()` | Advance the simulation by one generation |
+
+---
+
+## Simulation flow
+
+1. User edits the grid or generates a random state  
+2. Active chunks are detected  
+3. Each frame:
+   - Only relevant chunks are evaluated  
+   - A new grid is produced  
+   - Active chunks are recalculated  
+4. The grid is rendered to the screen  
+
+---
+
+## Design philosophy
+
+- Readable over clever  
+- Predictable behavior  
+- Explicit state transitions  
+- Suitable for learning and experimentation  
+
+This is **not** meant to be the fastest possible implementation.
 
 ## Requirements
 

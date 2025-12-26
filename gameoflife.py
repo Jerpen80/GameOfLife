@@ -21,7 +21,6 @@ def populate_grid_random(grid, density):
 # Count neighbouring alive cells
 def count_live_neighbor_cells(grid, x, y, grid_width, grid_height):
     count = 0
-    
     # Count how many of its 8 surrounding neighbors are alive where (0,0) is the cell itself:
     # (-1,-1) (0,-1) (1,-1)
     # (-1, 0) (0, 0) (1, 0)
@@ -29,20 +28,16 @@ def count_live_neighbor_cells(grid, x, y, grid_width, grid_height):
 
     for dy in (-1, 0, 1):
         for dx in (-1, 0, 1):
-
             # skip the cell itself
             if dx == 0 and dy == 0:
                 continue
-
             # convert relative offsets into absolute grid positions
             nx = x + dx
             ny = y + dy
-
             # prevent accessing invalid positions (beyond grid edges)
             if 0 <= nx < grid_width and 0 <= ny < grid_height:
                 # Add all alive neighbours (dead = 0, alive = 1)
                 count += grid[ny][nx]
-
     return count
 
 # detect if chunks contain live cells, or we can skip them
@@ -86,6 +81,7 @@ def iterate_chunk_cells(chunk_x, chunk_y, chunk_size, grid_width, grid_height):
 
 # Apply the game of life logic:
 def step(grid, grid_width, grid_height, active, chunk_size):
+    active = active_chunks_from_grid(grid, grid_width, grid_height, chunk_size)
     new_grid = make_grid(grid_width, grid_height)
 
     # evaluate also neighbors of active chunks
@@ -193,26 +189,6 @@ def main(grid_width, grid_height, cell_size, fps, mode, density):
 
                 if 0 <= x < grid_width and 0 <= y < grid_height:
                     grid[y][x] = 0 if grid[y][x] == 1 else 1
-
-                    # Update active chunks
-                    cx = x // chunk_size
-                    cy = y // chunk_size
-
-                    if grid[y][x] == 1:
-                        active.add((cx, cy))
-                    else:
-                        # Optional cleanup: remove chunk if empty
-                        still_alive = False
-                        for yy in range(cy * chunk_size, min((cy + 1) * chunk_size, grid_height)):
-                            for xx in range(cx * chunk_size, min((cx + 1) * chunk_size, grid_width)):
-                                if grid[yy][xx] == 1:
-                                    still_alive = True
-                                    break
-                            if still_alive:
-                                break
-
-                        if not still_alive:
-                            active.discard((cx, cy))
 
         # Update simulation once per frame (RUN only)
         if mode == "RUN":

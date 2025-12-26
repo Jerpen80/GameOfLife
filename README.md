@@ -36,7 +36,7 @@ This mode is useful for manually constructing patterns and stepping through thei
 
 ### Random start
 
-If the `--random` flag is provided, the grid is filled randomly with the given density (a float between `0` and `1`) and the simulation starts immediately:
+If the `--random` flag is provided, the grid is filled randomly with the given density (a float between `0` and `1`) and the simulation starts in paused state (press SPACE to start):
 
 ```bash
 python3 gameoflife.py --random 0.15

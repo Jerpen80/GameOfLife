@@ -83,7 +83,7 @@ def main(grid_width, grid_height, cell_size, fps, mode, density):
 
     grid = make_grid(grid_width, grid_height)
 
-    if mode == "RUN" and density is not None:
+    if density is not None:
         populate_grid_random(grid, density)
 
     # Init pygame
@@ -203,7 +203,7 @@ if __name__ == '__main__':
         mode = "EDIT"
         density = None
     else:
-        mode = "RUN"
+        mode = "PAUSE"
         density = args.random
 
     main(
